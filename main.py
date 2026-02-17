@@ -1,5 +1,7 @@
 from PIL import Image
 import os
+import argparse
+import sys # Added for sys.exit
 
 def get_ascii_char(pixel_intensity, char_set):
     """Maps a pixel intensity (0-255) to an ASCII character.
@@ -21,6 +23,7 @@ def image_to_ascii(image_path, output_width=100, char_set=' .:-=+*#%@'):
         str: The ASCII art representation of the image, or an error message.
     """
     if not os.path.exists(image_path):
+        # This check is now also done in the main block before calling, but kept for function robustness.
         return f"Error: Image '{image_path}' not found."
 
     try:
@@ -47,39 +50,38 @@ def image_to_ascii(image_path, output_width=100, char_set=' .:-=+*#%@'):
     return "".join(ascii_art_chars)
 
 if __name__ == "__main__":
+    # Usage: python main.py <path_to_image.jpg>
+    parser = argparse.ArgumentParser(description='Convert an image to ASCII art and display it in the terminal.')
+    parser.add_argument('image_path', help='Path to the input image file (e.g., image.jpg)')
+    args = parser.parse_args()
+
+    # Implement basic error handling
+    if not os.path.exists(args.image_path):
+        print(f"Error: Image file not found at '{args.image_path}'")
+        sys.exit(1)
+
     print("Welcome to AsciiArtAnimator!")
     print("----------------------------")
     print("To run this, you need to install Pillow: pip install Pillow")
-    print("Also, ensure you have an image file (e.g., 'sample.jpg') in the same directory,")
-    print("or change 'image_file' to a valid path. You can try the auto-downloader.")
+    print("Provide the image path as a command-line argument.")
     print("----------------------------\n")
 
-    image_file = "sample.jpg" # <-- Change this to your image path!
+    # Replace hardcoded image path with the command-line argument
+    image_file = args.image_path 
 
-    # Optional: Auto-download a sample image if it doesn't exist
-    if not os.path.exists(image_file):
-        print(f"'{image_file}' not found. Attempting to download a sample image...")
-        try:
-            import requests # This library needs to be installed: pip install requests
-            url = "https://www.python.org/static/community_logos/python-logo-only.png"
-            r = requests.get(url, allow_redirects=True)
-            with open(image_file, 'wb') as f:
-                f.write(r.content)
-            print(f"Downloaded '{image_file}' successfully.")
-        except ImportError:
-            print("To auto-download, install 'requests': pip install requests.")
-            print("Please place an image named 'sample.jpg' manually or update the 'image_file' variable.")
-            exit()
-        except Exception as e:
-            print(f"Failed to download sample image: {e}")
-            print("Please place an image named 'sample.jpg' manually or update the 'image_file' variable.")
-            exit()
+    # The auto-download logic is removed as the user is expected to provide an existing image path.
 
     print(f"Converting '{image_file}' to ASCII art...")
     # Adjust output_width for your terminal size for best results.
     # Common values are 80-120 characters.
     art = image_to_ascii(image_file, output_width=80)
-    print(art)
+    
+    # Check if image_to_ascii returned an error message
+    if art.startswith("Error:"):
+        print(art)
+        sys.exit(1)
+    else:
+        print(art)
 
     print("\n--- AsciiArtAnimator ---\n")
     print("This is just the beginning! Here are some ideas to expand this project:")
